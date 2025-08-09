@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Tablecontents from './functionalities/Tablecontents';
 
-function App() {
+const App = () => {
     return (
         <div>
-            <h1>Hello World</h1>
+            <h1>Creating a To Do List App!!!</h1>
+            <Tablecontents />
         </div>
     );
 }
