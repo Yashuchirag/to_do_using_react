@@ -43,7 +43,7 @@ const LoginPage = ({onLogin, onSignup}) => {
                 />
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? <a href="#" onClick={onSignup}>Sign up</a></p>
+            <p>Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); onSignup(); }} style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>Sign up</a></p>
         </div>
     );
 }
