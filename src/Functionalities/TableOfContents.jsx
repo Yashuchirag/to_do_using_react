@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import "../css/tablecontents.css";
+import "../css/TableContents.css";
 
-export default function TableExample() {
+export default function TableOfContents() {
   const [rows, setRows] = useState([
     { id: 1, name: "Task 1", status: "Pending" },
     { id: 2, name: "Task 2", status: "Completed" }
