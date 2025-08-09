@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const LoginPage = ({onLogin, onSignup}) => {
+const LoginPage = ({ onLogin, onSignUp }) => {
     const [form, setForm] = useState({
         username: '',
         password: ''
@@ -13,12 +13,12 @@ const LoginPage = ({onLogin, onSignup}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const users = JSON.parse(localStorage.getItem('users'));
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
         const user = users.find(
             (user) => user.username === form.username && user.password === form.password);
         if (user) {
             onLogin(form.username);
-        }else{
+        } else {
             alert('Invalid username or password');
         }
     };
@@ -28,24 +28,25 @@ const LoginPage = ({onLogin, onSignup}) => {
             <h1>Login</h1>
             <form onSubmit={handleSubmit}>
                 <input 
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={form.username}
-                onChange={handleChange}
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={form.username}
+                    onChange={handleChange}
                 />
                 <input 
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
                 />
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); onSignup(); }} style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>Sign up</a></p>
+            <p>Don't have an account?</p>
+            <button onClick={onSwitch}>Sign Up</button>
         </div>
     );
-}
+};
 
 export default LoginPage;
