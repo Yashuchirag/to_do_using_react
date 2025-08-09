@@ -31,7 +31,7 @@ const App = () => {
     return (
         <>
       {page === "login" && (
-        <LoginPage onLogin={handleLogin} onSwitch={() => setPage("signup")} />
+        <LoginPage onLogin={handleLogin} onSignUp={() => setPage("signup")} />
       )}
       {page === "signup" && (
         <SignUpPage 
@@ -39,7 +39,7 @@ const App = () => {
             handleLogin(username);
             setPage("todo");
           }} 
-          onSwitch={() => setPage("login")} 
+          onLogin={() => setPage("login")} 
         />
       )}
       {page === "todo" && <ToDo user={user} onLogout={handleLogout} />}

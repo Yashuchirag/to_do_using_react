@@ -15,7 +15,7 @@ export default function SignUpPage({ onSignUp, onSwitch }) {
     }
     users.push({ username: form.username, password: form.password });
     localStorage.setItem("users", JSON.stringify(users));
-    onSignUp(form.username); // call the prop passed from App
+    onSignUp(form.username);
   };
 
   return (

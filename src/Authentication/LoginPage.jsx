@@ -44,7 +44,7 @@ const LoginPage = ({ onLogin, onSignUp }) => {
                 <button type="submit">Login</button>
             </form>
             <p>Don't have an account?</p>
-            <button onClick={onSwitch}>Sign Up</button>
+            <button onClick={onSignUp}>Sign Up</button>
         </div>
     );
 };
