@@ -28,6 +28,7 @@ const App = () => {
         setPage("login");
       };
 
+
     return (
         <>
       {page === "login" && (
