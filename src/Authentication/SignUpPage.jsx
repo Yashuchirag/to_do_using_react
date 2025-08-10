@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { supabase } from "../utils/supabase";
 
 export default function SignUpPage({ onSignUp, onSwitch, onGoToTodo }) {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -15,29 +14,43 @@ export default function SignUpPage({ onSignUp, onSwitch, onGoToTodo }) {
 
     const { email, password } = form;
 
-    const { data, error } = await supabase.rpc("register_user", { 
-        p_email: email,
-        p_password: password 
-    });
+    try {
+      const res = await fetch('/.netlify/functions/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) return setError(error.message);
+      const raw = await res.text();                  // read raw text first
+      let payload = {};
+      try { payload = raw ? JSON.parse(raw) : {}; }  // try to parse JSON
+      catch { throw new Error(`Non-JSON response (${res.status}): ${raw.slice(0,200)}`); }
 
-    const user = data?.[0];
-    
-    localStorage.setItem("currentUser", JSON.stringify(user));
-    setInfo("User registered successfully");
 
-    onSignUp?.(user);
-    onGoToTodo?.();
+      if (!res.ok) {
+        throw new Error(payload.error || 'Sign up failed');
+      }
+
+      const user = payload.user;
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      setInfo("User registered successfully");
+
+      onSignUp?.(user);
+      onGoToTodo?.();
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
     <div style={{ padding: 24 }}>
       <h2>Sign up</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}{/* Error message */}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {info && <p style={{ color: "green" }}>{info}</p>}
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 8, maxWidth: 320 }}>
         <input
           name="email"
+          type="email"
           placeholder="Email"
           value={form.email}
           onChange={onChange}

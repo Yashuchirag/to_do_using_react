@@ -1,78 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ToDo from './ToDo';
 import LoginPage from './Authentication/LoginPage';
 import SignUpPage from './Authentication/SignUpPage';
-import { supabase } from './utils/supabase';
 
 const App = () => {
-    const [page, setPage] = useState('login');
-    const [user, setUser] = useState(null);
+  const [page, setPage] = useState('login');
+  const [user, setUser] = useState(null);
 
-    useEffect(() => {
-        // Listen for authentication state changes
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                setUser(session.user);
-                setPage("todo");
-            } else {
-                setUser(null);
-                setPage("login");
-            }
-        });
+  // Boot from localStorage and keep in sync across tabs
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('currentUser');
+      if (raw) {
+        const u = JSON.parse(raw);
+        setUser(u);
+        setPage('todo');
+      }
+    } catch {}
 
-        // Check the session on initial load
-        const session = supabase.auth.getSession();
-        if (session) {
-            setUser(session.user);
-            setPage("todo");
-        }
-
-        // Clean up the listener when the component unmounts
-        return () => {
-            authListener?.unsubscribe();
-        };
-    }, []);
-
-    const handleLogin = async (email, password) => {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            console.error("Login error:", error.message);
-        } else {
-            setUser(data.user);
-            setPage("todo");
-        }
+    const onStorage = (e) => {
+      if (e.key === 'currentUser') {
+        const u = e.newValue ? JSON.parse(e.newValue) : null;
+        setUser(u);
+        setPage(u ? 'todo' : 'login');
+      }
     };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
-    const handleSignUp = async (email, password) => {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) {
-            console.error("Sign up error:", error.message);
-        } else {
-            setUser(data.user);
-            setPage("todo");
-        }
-    };
+  // Callbacks invoked by child pages after successful login/signup
+  const handleLogin = (u) => {
+    setUser(u);
+    setPage('todo');
+  };
 
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
-        setPage("login");
-    };
+  const handleSignUp = (u) => {
+    setUser(u);
+    setPage('todo');
+  };
 
-    return (
-        <>
-            {page === "login" && (
-                <LoginPage onLogin={handleLogin} onSignUp={() => setPage("signup")} />
-            )}
-            {page === "signup" && (
-                <SignUpPage
-                    onSignUp={handleSignUp}
-                    onLogin={() => setPage("login")}
-                />
-            )}
-            {page === "todo" && <ToDo user={user} onLogout={handleLogout} />}
-        </>
-    );
+  const handleLogout = () => {
+    localStorage.removeItem('currentUser');
+    setUser(null);
+    setPage('login');
+  };
+
+  return (
+    <>
+      {page === 'login' && (
+        <LoginPage
+          onLogin={handleLogin}
+          onSignUp={() => setPage('signup')}
+          onGoToTodo={() => setPage('todo')}
+        />
+      )}
+
+      {page === 'signup' && (
+        <SignUpPage
+          onSignUp={handleSignUp}
+          onSwitch={() => setPage('login')}
+          onGoToTodo={() => setPage('todo')}
+        />
+      )}
+
+      {page === 'todo' && <ToDo user={user} onLogout={handleLogout} />}
+    </>
+  );
 };
 
 export default App;
