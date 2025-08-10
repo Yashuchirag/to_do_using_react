@@ -1,37 +1,51 @@
 import React, { useState } from 'react';
+import { supabase } from '../utils/supabase';
 
 const LoginPage = ({ onLogin, onSignUp }) => {
-    const [form, setForm] = useState({
-        username: '',
-        password: ''
-    });
+    const [form, setForm] = useState({ email: '', password: '' });
+    const [error, setError] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find(
-            (user) => user.username === form.username && user.password === form.password);
-        if (user) {
-            onLogin(form.username);
-        } else {
-            alert('Invalid username or password');
+        setError('');
+
+        const { email, password } = form;
+        const { data, error } = await supabase.rpc("login_user", { 
+            p_email: email,
+            p_password: password 
+        });
+
+        if (error) {
+            setError(error.message);
+            return;
         }
+
+        const user = data?.[0];
+        if (!user) {
+            setError("User not found");
+            return;
+        }
+        
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        onLogin?.(user);
+        onGoToTodo?.();
     };
 
     return (
         <div>
             <h1>Login</h1>
+            {error && <p style={{ color: "red" }}>{error}</p>}
             <form onSubmit={handleSubmit}>
                 <input 
                     type="text"
-                    name="username"
-                    placeholder="Username"
-                    value={form.username}
+                    name="email"
+                    placeholder="Email"
+                    value={form.email}
                     onChange={handleChange}
                 />
                 <input 
