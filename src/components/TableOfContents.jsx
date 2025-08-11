@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../css/TableContents.css";
+import "../css/TableOfContents.css";
 
 export default function TableOfContents() {
   const [rows, setRows] = useState([]);
