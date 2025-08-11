@@ -1,7 +1,11 @@
-[build]
-  publish = "build"
-  command = "npm run build"
-
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  # (optional but recommended) ensure Node 18+
+  [functions.runtime]
+    node_bundler = "esbuild"
+
+[dev]
+  framework = "#static"   # or your framework if detected
+  targetPort = 5173       # if using Vite; adjust if different
+  port = 8888
