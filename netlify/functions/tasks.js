@@ -17,7 +17,7 @@ exports.handler = async (event) => {
     if (httpMethod === 'GET') {
       const rows = await sql/*sql*/`
         select id, name, status
-        from tasks
+        from todos
         order by id asc
       `;
       return json(200, { rows });
@@ -28,7 +28,7 @@ exports.handler = async (event) => {
       if (!name || !status) return json(400, { error: 'Missing name or status' });
 
       const inserted = await sql/*sql*/`
-        insert into tasks (name, status)
+        insert into todos (name, status)
         values (${name}, ${status})
         returning id, name, status
       `;

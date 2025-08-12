@@ -12,7 +12,7 @@ exports.handler = async (event) => {
     const { email, password } = JSON.parse(event.body || '{}');
     if (!email || !password) return json(400, { error: 'Missing email or password' });
 
-    const rows = await sql/*sql*/`select * from register_user(${email}, ${password})`;
+    const rows = await sql/*sql*/`select * from users(${email}, ${password})`;
     const user = rows?.[0];
     if (!user) return json(500, { error: 'Registration failed' });
 

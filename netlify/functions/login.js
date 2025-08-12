@@ -15,7 +15,7 @@ exports.handler = async (event) => {
     }
 
     // Call your existing Postgres function
-    const rows = await sql/*sql*/`select * from login_user(${email}, ${password})`;
+    const rows = await sql/*sql*/`select * from users(${email}, ${password})`;
     const user = rows?.[0];
 
     if (!user) {
