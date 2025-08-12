@@ -3,7 +3,7 @@ import "../css/TableOfContents.css";
 
 export default function TableOfContents() {
   const [rows, setRows] = useState([]);
-  const [newRow, setNewRow] = useState({ name: "", status: "" });
+  const [newRow, setNewRow] = useState({ title: "", content: "", status: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +35,11 @@ export default function TableOfContents() {
 
   const handleAddRow = async (e) => {
     e.preventDefault();
-    if (!newRow.name.trim() || !newRow.status.trim()) return;
+    // backend requires title & status; content optional
+    if (!newRow.title.trim() || !newRow.status.trim()) {
+      setError("Title and status are required");
+      return;
+    }
     setError("");
 
     try {
@@ -49,7 +53,7 @@ export default function TableOfContents() {
       if (!res.ok) throw new Error(data.error || "Failed to add row");
 
       setRows((prev) => [...prev, data.row]);
-      setNewRow({ name: "", status: "" });
+      setNewRow({ title: "", content: "", status: "" });
     } catch (e) {
       console.error(e);
       setError(e.message || "Failed to add row");
@@ -70,7 +74,8 @@ export default function TableOfContents() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Task Name</th>
+                <th>Title</th>
+                <th>Content</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -78,7 +83,8 @@ export default function TableOfContents() {
               {rows.map((row) => (
                 <tr key={row.id}>
                   <td>{row.id}</td>
-                  <td>{row.name}</td>
+                  <td>{row.title}</td>
+                  <td>{row.content}</td>
                   <td>{row.status}</td>
                 </tr>
               ))}
@@ -88,9 +94,16 @@ export default function TableOfContents() {
           <form onSubmit={handleAddRow} className="table-form">
             <input
               type="text"
-              name="name"
-              placeholder="Task name"
-              value={newRow.name}
+              name="title"
+              placeholder="Title"
+              value={newRow.title}
+              onChange={handleChange}
+            />
+            <input
+              type="text"
+              name="content"
+              placeholder="Content (optional)"
+              value={newRow.content}
               onChange={handleChange}
             />
             <input

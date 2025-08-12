@@ -13,7 +13,7 @@ export default function TodoPage({ user, onLogout }) {
         }}
       >
         <h3 style={{ margin: 0 }}>
-          Welcome, {user ? user.email : "Guest"}
+          Welcome, {user ? user.name : "Guest"}
         </h3>
         <button onClick={onLogout}>Logout</button>
       </header>
