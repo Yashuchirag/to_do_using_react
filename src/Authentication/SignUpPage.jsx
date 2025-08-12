@@ -44,6 +44,12 @@ export default function SignUp() {
         />
         <button type="submit">Create Account</button>
       </form>
+      <p style={{ marginTop: 16, fontSize: 14 }}>
+        Already have an account?{" "}
+        <Link to="/login" style={{ color: "#2563eb", textDecoration: "none" }}>
+          Log in here
+        </Link>
+      </p>
     </div>
   );
 }

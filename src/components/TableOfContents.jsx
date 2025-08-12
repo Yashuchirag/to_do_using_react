@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "../css/TableOfContents.css";
 
 export default function TableOfContents() {
@@ -6,6 +6,16 @@ export default function TableOfContents() {
   const [newRow, setNewRow] = useState({ title: "", content: "", status: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Pull the logged-in user from localStorage (set at signup/login)
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+  const userEmail = currentUser?.email || null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +45,10 @@ export default function TableOfContents() {
 
   const handleAddRow = async (e) => {
     e.preventDefault();
-    // backend requires title & status; content optional
+    if (!userEmail) {
+      setError("You must be logged in (missing email).");
+      return;
+    }
     if (!newRow.title.trim() || !newRow.status.trim()) {
       setError("Title and status are required");
       return;
@@ -43,10 +56,11 @@ export default function TableOfContents() {
     setError("");
 
     try {
+      const payload = { email: userEmail, ...newRow }; // include email for the API
       const res = await fetch("/.netlify/functions/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRow),
+        body: JSON.stringify(payload),
       });
       const raw = await res.text();
       const data = raw ? JSON.parse(raw) : {};
@@ -64,6 +78,12 @@ export default function TableOfContents() {
     <div className="table-container">
       <h2>📋 Tasks Table</h2>
 
+      {!userEmail && (
+        <p style={{ color: "#a67c00", marginTop: 0 }}>
+          You’re not logged in, or your user has no email. Login first to add tasks.
+        </p>
+      )}
+
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {loading ? (
@@ -77,6 +97,7 @@ export default function TableOfContents() {
                 <th>Title</th>
                 <th>Content</th>
                 <th>Status</th>
+                <th>Email</th>
               </tr>
             </thead>
             <tbody>
@@ -86,6 +107,7 @@ export default function TableOfContents() {
                   <td>{row.title}</td>
                   <td>{row.content}</td>
                   <td>{row.status}</td>
+                  <td>{row.email}</td>
                 </tr>
               ))}
             </tbody>
@@ -113,7 +135,9 @@ export default function TableOfContents() {
               value={newRow.status}
               onChange={handleChange}
             />
-            <button type="submit">Add Row</button>
+            <button type="submit" disabled={!userEmail}>
+              Add Row
+            </button>
           </form>
         </>
       )}
