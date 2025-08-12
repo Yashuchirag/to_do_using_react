@@ -1,26 +1,49 @@
 // netlify/functions/signup.js
 const { neon } = require('@neondatabase/serverless');
-const json = (s,b)=>({ statusCode:s, headers:{'Content-Type':'application/json'}, body:JSON.stringify(b) });
+
+const json = (s, b, headers = {}) => ({
+  statusCode: s,
+  headers: { 'Content-Type': 'application/json', ...headers },
+  body: JSON.stringify(b),
+});
+
+// (Optional) CORS if your frontend is on a different origin
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return json(204, {}, cors);
+  if (event.httpMethod !== 'POST') return json(405, { error: 'Method Not Allowed' }, cors);
+
+  let body = {};
   try {
-    if (event.httpMethod !== 'POST') return json(405, { error: 'Method Not Allowed' });
+    body = JSON.parse(event.body || '{}');
+  } catch {
+    return json(400, { error: 'Invalid JSON' }, cors);
+  }
 
-    if (!process.env.DATABASE_URL) return json(500, { error: 'DATABASE_URL is not set' });
-    const sql = neon(process.env.DATABASE_URL); // construct inside handler so it sees env
+  const { email, password } = body;
+  console.log('name', email, 'password', password, body);
 
-    const { email, password } = JSON.parse(event.body || '{}');
-    if (!email || !password) return json(400, { error: 'Missing email or password' });
+  if (!email || !password) return json(400, { error: 'Email and password are required' }, cors);
 
-    const rows = await sql/*sql*/`select * from users(${email}, ${password})`;
-    const user = rows?.[0];
-    if (!user) return json(500, { error: 'Registration failed' });
+  try {
+    if (!process.env.DATABASE_URL) return json(500, { error: 'DATABASE_URL not set' }, cors);
 
-    delete user.password; delete user.password_hash;
-    return json(200, { user });
+    const sql = neon(process.env.DATABASE_URL);
+    const rows = await sql/*sql*/`
+      INSERT INTO public.users_simple (name, password)
+      VALUES (${email}, ${password})
+      RETURNING id, name, created_at
+    `;
+
+    const user = rows[0];
+    return json(200, { user }, cors);
   } catch (err) {
     console.error(err);
-    if (err && err.code === '23505') return json(409, { error: 'Email already registered' });
-    return json(500, { error: 'Internal error' });
+    return json(500, { error: 'Internal error' }, cors);
   }
 };

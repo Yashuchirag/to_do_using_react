@@ -1,34 +1,49 @@
 // netlify/functions/login.js
 const { neon } = require('@neondatabase/serverless');
 
-const sql = neon(process.env.DATABASE_URL); // set this in Netlify env vars
+const json = (s, b, h = {}) => ({
+  statusCode: s,
+  headers: { 'Content-Type': 'application/json', ...h },
+  body: JSON.stringify(b),
+});
+
+// (Optional) CORS if frontend is on a different origin
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
 exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return json(204, {}, cors);
+  if (event.httpMethod !== 'POST') return json(405, { error: 'Method Not Allowed' }, cors);
+
+  let body = {};
+  try { body = JSON.parse(event.body || '{}'); }
+  catch { return json(400, { error: 'Invalid JSON' }, cors); }
+
+  const { email, password } = body; // <-- use name, not email
+  if (!email || !password) return json(400, { error: 'Missing name or password' }, cors);
+
   try {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, body: 'Method Not Allowed' };
-    }
+    if (!process.env.DATABASE_URL) return json(500, { error: 'DATABASE_URL not set' }, cors);
 
-    const { email, password } = JSON.parse(event.body || '{}');
-    if (!email || !password) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing email or password' }) };
-    }
+    const sql = neon(process.env.DATABASE_URL);
 
-    // Call your existing Postgres function
-    const rows = await sql/*sql*/`select * from users(${email}, ${password})`;
-    const user = rows?.[0];
+    // Plain-text check against users_simple
+    const rows = await sql/*sql*/`
+      SELECT id, name, created_at
+      FROM public.users_simple
+      WHERE name = ${email} AND password = ${password}
+      LIMIT 1
+    `;
 
-    if (!user) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'User not found' }) };
-    }
+    const user = rows[0];
+    if (!user) return json(401, { error: 'Invalid credentials' }, cors);
 
-    // Optional: strip sensitive fields if your function returns them
-    delete user.password;
-    delete user.password_hash;
-
-    return { statusCode: 200, body: JSON.stringify({ user }) };
+    return json(200, { user }, cors);
   } catch (err) {
     console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Internal error' }) };
+    return json(500, { error: 'Internal error' }, cors);
   }
 };
