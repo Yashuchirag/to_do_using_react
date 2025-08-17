@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const LoginPage = ({ onLogin, onSignUp, onGoToTodo }) => {
+const LoginPage = ({ onLogin, onSignUp }) => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
@@ -16,7 +16,7 @@ const LoginPage = ({ onLogin, onSignUp, onGoToTodo }) => {
     const { email, password } = form;
 
     try {
-      const res = await fetch('/.netlify/functions/login', {
+      const res = await fetch('/netlify/functions/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -36,7 +36,6 @@ const LoginPage = ({ onLogin, onSignUp, onGoToTodo }) => {
 
       localStorage.setItem('currentUser', JSON.stringify(user));
       onLogin?.(user);
-      onGoToTodo?.();
     } catch (err) {
       setError('Something went wrong. Please try again.');
     }
@@ -64,7 +63,7 @@ const LoginPage = ({ onLogin, onSignUp, onGoToTodo }) => {
         <button type="submit">Login</button>
       </form>
       <p>Don't have an account?</p>
-      <button onClick={onSignUp}>Sign Up</button>
+      <button type="button" onClick={onSignUp}>Sign Up</button>
     </div>
   );
 };

@@ -16,6 +16,7 @@ export default function TableOfContents() {
     }
   }, []);
   const userEmail = currentUser?.email || null;
+  console.log("userEmail", userEmail);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,7 +78,7 @@ export default function TableOfContents() {
   return (
     <div className="table-container">
       <h2>📋 Tasks Table</h2>
-
+      <p>Logged in as {userEmail}</p>
       {!userEmail && (
         <p style={{ color: "#a67c00", marginTop: 0 }}>
           You’re not logged in, or your user has no email. Login first to add tasks.

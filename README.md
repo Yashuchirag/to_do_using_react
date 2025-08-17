@@ -1,6 +1,6 @@
 # React To-Do Application
 
-A modern, responsive to-do application built with React that helps you organize your tasks efficiently.
+A modern, responsive to-do application built with React that helps you organize your tasks efficiently. Application is aloso hosted on web using netlify and can be found in https://todo.chiragch.com
 
 ## ✨ Features
 

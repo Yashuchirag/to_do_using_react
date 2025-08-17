@@ -52,7 +52,6 @@ const App = () => {
         <LoginPage
           onLogin={handleLogin}
           onSignUp={() => setPage('signup')}
-          onGoToTodo={() => setPage('todo')}
         />
       )}
 
@@ -60,7 +59,6 @@ const App = () => {
         <SignUpPage
           onSignUp={handleSignUp}
           onSwitch={() => setPage('login')}
-          onGoToTodo={() => setPage('todo')}
         />
       )}
 

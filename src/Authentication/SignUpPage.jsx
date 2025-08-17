@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
-export default function SignUp() {
-  const [form, setForm] = useState({ name: "", password: "" });
+export default function SignUpPage({ onSignUp, onSwitch }) {
+  const [form, setForm] = useState({ email: "", password: "" });
   const [msg, setMsg] = useState("");
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -10,15 +10,21 @@ export default function SignUp() {
     e.preventDefault();
     setMsg("");
     try {
-      const res = await fetch("/.netlify/functions/signup", {
+      const res = await fetch("/netlify/functions/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(form), // { email, password }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Signup failed");
-      setMsg(`User created: ${data.user.name} (id: ${data.user.id})`);
-      setForm({ name: "", password: "" });
+
+      const user = data.user;
+      // persist locally so refresh keeps you signed in (matches LoginPage)
+      localStorage.setItem("currentUser", JSON.stringify(user));
+
+      setMsg(`User created: ${user.name} (id: ${user.id})`);
+      onSignUp?.(user); // parent will setPage('todo')
+      setForm({ email: "", password: "" });
     } catch (err) {
       setMsg(err.message);
     }
@@ -30,14 +36,14 @@ export default function SignUp() {
       {msg && <p>{msg}</p>}
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 8 }}>
         <input
-          name="name"
-          placeholder="Name"
-          value={form.name}
+          name="email"
+          placeholder="Email"
+          value={form.email}
           onChange={onChange}
         />
         <input
           name="password"
-          type="text"  // plain text per your request
+          type="password"
           placeholder="Password"
           value={form.password}
           onChange={onChange}
@@ -46,9 +52,13 @@ export default function SignUp() {
       </form>
       <p style={{ marginTop: 16, fontSize: 14 }}>
         Already have an account?{" "}
-        <Link to="/login" style={{ color: "#2563eb", textDecoration: "none" }}>
+        <button
+          type="button"
+          onClick={() => onSwitch?.()}
+          style={{ color: "#2563eb", textDecoration: "none", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        >
           Log in here
-        </Link>
+        </button>
       </p>
     </div>
   );
